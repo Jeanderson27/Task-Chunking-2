@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Chunking — Aprendly</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c1: #00637f;
+  --c2: #0c91b7;
+  --c3: #49bfe0;
+  --c4: #cceffe;
+  --c5: #ffffff;
+  --bg: #f0faff;
+  --surface: #ffffff;
+  --border: #b8e8f7;
+  --text: #003d4f;
+  --muted: #4a8fa3;
+  --accent: #00637f;
+  --tag-bg: #e0f5fd;
+
+  --green-bg: #e8f8ee; --green-border: #7dd4a0; --green-text: #0d5c30;
+  --amber-bg: #fff8e6; --amber-border: #f5c842; --amber-text: #5a3c00;
+  --purple-bg: #f2f0ff; --purple-border: #b0a8f0; --purple-text: #2e2880;
+  --coral-bg: #fff0ec; --coral-border: #f5a080; --coral-text: #6a2810;
+  --blue-bg: #e6f4fb; --blue-border: #7cc8f0; --blue-text: #0a3c70;
+  --teal-bg: #e1f8f2; --teal-border: #4dcfb0; --teal-text: #024030;
+  --pink-bg: #fff0f6; --pink-border: #f5a0c8; --pink-text: #601838;
+  --red-bg: #fff0f0; --red-border: #f09898; --red-text: #580f0f;
+  --indigo-bg: #eeeefc; --indigo-border: #a8a8f0; --indigo-text: #202070;
+  --gray-bg: #f0f2f4; --gray-border: #b0bcc8; --gray-text: #2c3a48;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0 0 4rem;
+}
+
+/* HEADER BRAND */
+.brand-bar {
+  background: var(--c1);
+  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+
+.brand-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.brand-tagline {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  font-weight: 300;
+  letter-spacing: .04em;
+  text-align: right;
+}
+
+.container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  padding-top: 0.5rem;
+}
+
+.hero-chip {
+  display: inline-block;
+  background: var(--c4);
+  color: var(--c1);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 100px;
+  border: 1px solid var(--c3);
+  margin-bottom: 0.75rem;
+}
+
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--c1);
+  margin-bottom: 0.5rem;
+}
+
+header h1 em {
+  font-style: italic;
+  color: var(--c2);
+}
+
+header p {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+/* STEPS */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.1rem;
+}
+.step-dot {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--c2);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* AREA GRID */
+.area-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 2rem;
+}
+
+.area-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 400;
+  transition: all .15s;
+  text-align: left;
+}
+
+.area-btn:hover {
+  border-color: var(--c2);
+  background: var(--tag-bg);
+}
+
+.area-btn.selected {
+  border-width: 1.5px;
+}
+
+.area-btn .area-icon { font-size: 16px; flex-shrink: 0; }
+
+/* TASK INPUT */
+.input-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 1.5rem;
+}
+
+.input-block label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.input-block textarea {
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  line-height: 1.6;
+  min-height: 72px;
+}
+
+.input-block textarea::placeholder { color: var(--muted); font-weight: 300; }
+
+/* GENERATE BUTTON */
+.generate-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 2.5rem;
+  letter-spacing: .02em;
+}
+.generate-btn:hover { opacity: .9; }
+.generate-btn:active { transform: scale(.99); }
+.generate-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* LOADING */
+.loading { display: none; text-align: center; padding: 2rem 0; color: var(--muted); font-size: 14px; font-weight: 300; }
+.loading.visible { display: block; }
+.spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--c2); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* RESULT */
+#result { display: none; }
+#result.visible { display: block; }
+
+.result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.result-title { font-family: 'DM Serif Display', serif; font-size: 1.4rem; font-weight: 400; color: var(--c1); }
+.reset-link { font-size: 12px; color: var(--muted); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: underline; text-underline-offset: 2px; }
+.reset-link:hover { color: var(--c1); }
+
+/* CHECKLIST */
+.chunk-block { margin-bottom: 1.25rem; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+.chunk-header { padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+.chunk-header-icon { font-size: 18px; }
+.chunk-header-text { flex: 1; }
+.chunk-header-title { font-size: 14px; font-weight: 500; line-height: 1.2; }
+.chunk-header-sub { font-size: 11px; margin-top: 2px; opacity: .75; }
+
+.chunk-sep-label { font-size: 10px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; padding: 6px 14px 4px; background: var(--tag-bg); color: var(--muted); border-top: 1px solid var(--border); }
+
+.task-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--border); cursor: pointer; transition: background .12s; background: var(--surface); }
+.task-row:hover { background: var(--bg); }
+.task-row.done .task-text { text-decoration: line-through; color: var(--muted); }
+.task-row.done .check-wrap { background: var(--c4); border-color: var(--c3); }
+.check-wrap { width: 20px; height: 20px; border: 1px solid var(--border); border-radius: 5px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all .15s; background: var(--surface); }
+.check-wrap svg { width: 12px; height: 12px; stroke: var(--c1); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity .12s; }
+.task-row.done .check-wrap svg { opacity: 1; }
+.task-content { flex: 1; }
+.task-text { font-size: 13px; line-height: 1.5; color: var(--text); }
+.task-note { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 300; }
+
+/* PROGRESS */
+.progress-bar-wrap { background: var(--c4); border-radius: 100px; height: 5px; margin-bottom: 1.5rem; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--c1), var(--c3)); transition: width .3s ease; }
+.progress-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+
+.new-btn { display: block; width: 100%; margin-top: 1.5rem; padding: 12px; background: transparent; border: 1px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--muted); cursor: pointer; transition: all .15s; }
+.new-btn:hover { border-color: var(--c2); color: var(--c1); }
+
+.error-msg { background: #fff0f0; border: 1px solid #f09898; color: #580f0f; border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-bottom: 1rem; display: none; }
+.error-msg.visible { display: block; }
+
+/* FOOTER */
+.footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+.footer p { font-size: 12px; color: var(--muted); }
+.footer strong { color: var(--c1); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- BRAND BAR -->
+<div class="brand-bar">
+  <span class="brand-name">Aprendly</span>
+  <span class="brand-tagline">Método · Foco · Resultado</span>
+</div>
+
+<div class="container">
+
+<header>
+  <div class="hero-chip">Método de produtividade</div>
+  <h1>Task <em>Chunking</em></h1>
+  <p>Divida qualquer tarefa em blocos concretos e acionáveis</p>
+</header>
+
+<!-- STEP 1 -->
+<div class="step-indicator">
+  <div class="step-dot">1</div>
+  <span class="step-label">Escolha a área</span>
+</div>
+
+<div class="area-grid" id="area-grid">
+  <button class="area-btn" data-area="Estudo" data-color="blue" onclick="selectArea(this)"><span class="area-icon">📚</span> Estudo</button>
+  <button class="area-btn" data-area="Alimentação e Dieta" data-color="amber" onclick="selectArea(this)"><span class="area-icon">🥗</span> Alimentação e dieta</button>
+  <button class="area-btn" data-area="Profissão e Carreira" data-color="purple" onclick="selectArea(this)"><span class="area-icon">💼</span> Profissão e carreira</button>
+  <button class="area-btn" data-area="Exercícios e Atividade Física" data-color="green" onclick="selectArea(this)"><span class="area-icon">🏋️</span> Exercícios e atividade física</button>
+  <button class="area-btn" data-area="Vida Social e Família" data-color="teal" onclick="selectArea(this)"><span class="area-icon">👨‍👩‍👧</span> Vida social e família</button>
+  <button class="area-btn" data-area="Espiritualidade" data-color="indigo" onclick="selectArea(this)"><span class="area-icon">🧘</span> Espiritualidade</button>
+  <button class="area-btn" data-area="Relacionamentos Amorosos" data-color="pink" onclick="selectArea(this)"><span class="area-icon">❤️</span> Relacionamentos amorosos</button>
+  <button class="area-btn" data-area="Saúde e Bem-Estar" data-color="coral" onclick="selectArea(this)"><span class="area-icon">🩺</span> Saúde e bem-estar</button>
+  <button class="area-btn" data-area="Beleza e Cuidados Pessoais" data-color="pink" onclick="selectArea(this)"><span class="area-icon">✨</span> Beleza e cuidados pessoais</button>
+  <button class="area-btn" data-area="Finanças" data-color="green" onclick="selectArea(this)"><span class="area-icon">💰</span> Finanças</button>
+  <button class="area-btn" data-area="Projetos Pessoais" data-color="amber" onclick="selectArea(this)"><span class="area-icon">🚀</span> Projetos pessoais</button>
+</div>
+
+<!-- STEP 2 -->
+<div class="step-indicator">
+  <div class="step-dot">2</div>
+  <span class="step-label">Descreva sua tarefa</span>
+</div>
+
+<div class="input-block">
+  <label>O que você precisa fazer?</label>
+  <textarea id="task-input" rows="3" placeholder="Ex: Preciso estudar direito constitucional para minha prova na próxima semana..."></textarea>
+</div>
+
+<div class="error-msg" id="error-msg"></div>
+
+<button class="generate-btn" id="gen-btn" onclick="generate()">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+  Gerar meu Task Chunking
+</button>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  Montando seus blocos de ação...
+</div>
+
+<!-- RESULT -->
+<div id="result">
+  <div class="result-header">
+    <div class="result-title" id="result-title">Seu plano de ação</div>
+    <button class="reset-link" onclick="resetAll()">Reiniciar tudo</button>
+  </div>
+  <div class="progress-label">
+    <span id="progress-text">0 de 0 tarefas concluídas</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+  <div id="checklist-container"></div>
+  <button class="new-btn" onclick="resetAll()">+ Gerar novo Task Chunking</button>
+</div>
+
+<div class="footer">
+  <p>Produzido por: <strong>Aprendly®</strong> · CNPJ: 42.755.255/0001-04</p>
+</div>
+
+</div>
+
+<script>
+const COLOR_MAP = {
+  green:  { bg:'#e8f8ee', border:'#7dd4a0', text:'#0d5c30' },
+  amber:  { bg:'#fff8e6', border:'#f5c842', text:'#5a3c00' },
+  purple: { bg:'#f2f0ff', border:'#b0a8f0', text:'#2e2880' },
+  blue:   { bg:'#e6f4fb', border:'#7cc8f0', text:'#0a3c70' },
+  teal:   { bg:'#e1f8f2', border:'#4dcfb0', text:'#024030' },
+  indigo: { bg:'#eeeefc', border:'#a8a8f0', text:'#202070' },
+  pink:   { bg:'#fff0f6', border:'#f5a0c8', text:'#601838' },
+  coral:  { bg:'#fff0ec', border:'#f5a080', text:'#6a2810' },
+  red:    { bg:'#fff0f0', border:'#f09898', text:'#580f0f' },
+  gray:   { bg:'#f0f2f4', border:'#b0bcc8', text:'#2c3a48' },
+};
+
+let selectedArea = null;
+let selectedColor = 'blue';
+
+function selectArea(btn) {
+  document.querySelectorAll('.area-btn').forEach(b => {
+    b.classList.remove('selected');
+    b.style.borderColor = '';
+    b.style.background = '';
+    b.style.color = '';
+  });
+  btn.classList.add('selected');
+  selectedArea = btn.dataset.area;
+  selectedColor = btn.dataset.color || 'blue';
+  const c = COLOR_MAP[selectedColor] || COLOR_MAP.blue;
+  btn.style.borderColor = c.border;
+  btn.style.background = c.bg;
+  btn.style.color = c.text;
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 4000);
+}
+
+async function generate() {
+  const task = document.getElementById('task-input').value.trim();
+  if (!selectedArea) { showError('Selecione uma área primeiro.'); return; }
+  if (!task) { showError('Descreva a tarefa que precisa executar.'); return; }
+
+  document.getElementById('gen-btn').disabled = true;
+  document.getElementById('loading').classList.add('visible');
+  document.getElementById('result').classList.remove('visible');
+
+  const systemPrompt = `Você é um especialista em produtividade e Task Chunking da Aprendly.
+Quando o usuário informar uma área e uma tarefa, crie uma lista de task chunking detalhada.
+
+REGRAS OBRIGATÓRIAS:
+1. Sempre comece com 2-3 tarefas de "quebra de inércia" — ações físicas mínimas para tirar a pessoa do estado parado (ex: vestir a roupa, ir ao local, abrir o documento, beber água).
+2. Inclua tarefas que definem: O QUÊ será feito, POR QUANTO TEMPO, ONDE, COMO e EM QUAIS ETAPAS.
+3. Divida em grupos com rótulos curtos (ex: "Quebrando a inércia", "Definindo o plano", "Executando em etapas", "Finalizando").
+4. Cada tarefa deve ter texto principal e uma nota explicativa curta.
+5. Total de tarefas: entre 8 e 12.
+
+Responda APENAS em JSON válido, sem texto fora, sem markdown.
+
+Formato exato:
+{
+  "titulo": "título curto descritivo",
+  "grupos": [
+    {
+      "label": "nome do grupo",
+      "tarefas": [
+        { "texto": "descrição da tarefa", "nota": "dica curta" }
+      ]
+    }
+  ]
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `Área: ${selectedArea}\nTarefa: ${task}` }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content?.find(b => b.type === 'text')?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    renderResult(JSON.parse(clean));
+  } catch(e) {
+    showError('Erro ao gerar. Tente novamente.');
+    console.error(e);
+  } finally {
+    document.getElementById('gen-btn').disabled = false;
+    document.getElementById('loading').classList.remove('visible');
+  }
+}
+
+function renderResult(data) {
+  const c = COLOR_MAP[selectedColor] || COLOR_MAP.blue;
+  const container = document.getElementById('checklist-container');
+  container.innerHTML = '';
+
+  const block = document.createElement('div');
+  block.className = 'chunk-block';
+  block.style.borderColor = c.border;
+
+  const header = document.createElement('div');
+  header.className = 'chunk-header';
+  header.style.background = c.bg;
+  header.style.borderBottom = `1px solid ${c.border}`;
+  header.innerHTML = `
+    <span class="chunk-header-icon">${getIcon(selectedArea)}</span>
+    <div class="chunk-header-text">
+      <div class="chunk-header-title" style="color:${c.text}">${selectedArea}</div>
+      <div class="chunk-header-sub" style="color:${c.text}">O que · quando · onde · como · em quais etapas</div>
+    </div>`;
+  block.appendChild(header);
+
+  data.grupos.forEach(grupo => {
+    const sep = document.createElement('div');
+    sep.className = 'chunk-sep-label';
+    sep.textContent = grupo.label;
+    block.appendChild(sep);
+
+    grupo.tarefas.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'task-row';
+      row.innerHTML = `
+        <div class="check-wrap"><svg viewBox="0 0 12 10" fill="none"><polyline points="1,5 4.5,8.5 11,1.5"/></svg></div>
+        <div class="task-content">
+          <div class="task-text">${t.texto}</div>
+          ${t.nota ? `<div class="task-note">${t.nota}</div>` : ''}
+        </div>`;
+      row.onclick = () => { row.classList.toggle('done'); updateProgress(); };
+      block.appendChild(row);
+    });
+  });
+
+  container.appendChild(block);
+  document.getElementById('result-title').textContent = data.titulo || 'Seu plano de ação';
+  document.getElementById('result').classList.add('visible');
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  updateProgress();
+}
+
+function updateProgress() {
+  const rows = document.querySelectorAll('.task-row');
+  const done = document.querySelectorAll('.task-row.done').length;
+  const total = rows.length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progress-text').textContent = `${done} de ${total} tarefas concluídas`;
+  document.getElementById('progress-pct').textContent = `${pct}%`;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function getIcon(area) {
+  const m = {'Estudo':'📚','Alimentação e Dieta':'🥗','Profissão e Carreira':'💼','Exercícios e Atividade Física':'🏋️','Vida Social e Família':'👨‍👩‍👧','Espiritualidade':'🧘','Relacionamentos Amorosos':'❤️','Saúde e Bem-Estar':'🩺','Beleza e Cuidados Pessoais':'✨','Finanças':'💰','Projetos Pessoais':'🚀'};
+  return m[area] || '📋';
+}
+
+function resetAll() {
+  selectedArea = null;
+  selectedColor = 'blue';
+  document.querySelectorAll('.area-btn').forEach(b => {
+    b.classList.remove('selected');
+    b.style.borderColor = '';
+    b.style.background = '';
+    b.style.color = '';
+  });
+  document.getElementById('task-input').value = '';
+  document.getElementById('result').classList.remove('visible');
+  document.getElementById('checklist-container').innerHTML = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
